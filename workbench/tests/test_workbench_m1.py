@@ -15,6 +15,17 @@ from workbench.backend.store import Conflict, Missing, Store
 from workbench.worker import EVIDENCE_LOCK, Worker, worker_lock
 
 
+def test_workbench_services_share_configured_deeptutor(tmp_path, monkeypatch):
+    configured_python = tmp_path / "custom python"
+    monkeypatch.setenv("DEEPTUTOR_API_URL", "http://127.0.0.1:18001/")
+    monkeypatch.setenv("DEEPTUTOR_PYTHON", str(configured_python))
+    app = create_app(tmp_path)
+    worker = Worker(app.state.store)
+    for adapter in (app.state.adapter, worker.adapter):
+        assert adapter.base_url == "http://127.0.0.1:18001"
+        assert adapter.python == configured_python
+
+
 @pytest.fixture
 def store(tmp_path):
     value = Store(tmp_path / "data")

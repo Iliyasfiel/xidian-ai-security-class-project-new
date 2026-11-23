@@ -9,13 +9,15 @@
 ```powershell
 # 本批已构建前端；以后修改前端时再执行。
 Push-Location -LiteralPath 'projects/project-04-Intelligence Gathering/webui'
-try { & 'E:\nodejs\npm.cmd' run build } finally { Pop-Location }
+try { npm.cmd run build } finally { Pop-Location }
 
 # 启动独立 API 和单 Worker，窗口隐藏；已占用端口时拒绝重复启动。
 .\workbench\start-workbench.ps1
 ```
 
 入口：[研究工作台](http://127.0.0.1:8090/workbench)。04 启动后也可从侧栏或 `/workbench` 跳转。启动脚本默认使用项目 04 的 `.venv/Scripts/python.exe`，没有新增依赖；`-Foreground` 仅前台运行 API，需另开 PowerShell 执行 `python -m workbench.worker`（使用同一虚拟环境）。
+
+工作台与项目03的地址、解释器和端口配置见[协作指引](../CONTRIBUTING.md#本地配置与路径)。
 
 索引和检索还需要 03 本机 API `127.0.0.1:8001` 及其既有本地嵌入服务。支持的 03 原启动脚本为 `projects/project-03-deeptutor/start-local.ps1 -NoBrowser`，它会启动 03 完整界面与 API。本次联调只启动已有本地嵌入脚本和 03 CLI `serve --host 127.0.0.1 --port 8001`；不启动收费模型。
 
