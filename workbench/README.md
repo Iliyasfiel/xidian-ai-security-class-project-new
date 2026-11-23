@@ -44,6 +44,8 @@ try { npm.cmd run build } finally { Pop-Location }
 
 ## 验收
 
+日常开发可在根目录用项目04的 Python 运行 `python -m workbench.verify_offline outputs/offline-smoke`。输出目录必须是新目录。命令使用仓库自带的合成资料和冻结回答，检查任务恢复、独立重算与报告导出，生成 `report/index.html`。检索和执行服务使用测试替身，无需 Docker、GPU、模型凭据或历史文件。
+
 真实本机链路、用户审核授权、离线故障/并发测试、UI 截图与限制见 [M1 验收记录](../outputs/integration-m1-20261024/README.md)。M0 原始锁清单和验收记录保留不变。
 
 ## 提示注入专用实验（前四步）
