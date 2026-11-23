@@ -100,6 +100,8 @@ class Executor02:
             gateway = json.loads((self.store.root / "model-session/gateway.json").read_bytes())
             if gateway.get("experiment_data") != str(self.store.root) or type(gateway.get("port")) is not int or not 1 <= gateway["port"] <= 65535:
                 raise ValueError("gateway must be explicitly bound to this workbench budget database")
+            if gateway.get("provider") != package["config"]["experiment"].get("provider"):
+                raise ValueError("gateway provider does not match the approved plan")
             # Only a restricted grant token, never the provider key or legacy gateway token.
             content["gateway-access.json"] = canonical(dict(grant_id=task["input"]["grant_id"], token=budgets.credential(task["input"]["grant_id"]), port=gateway["port"]))
         if folder.exists():

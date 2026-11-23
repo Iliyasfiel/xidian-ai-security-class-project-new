@@ -224,7 +224,8 @@ class Worker:
                 usage = budgets.validate(task["input"]["grant_id"], package)
                 if result["validation_status"] == "passed":
                     responses = json.loads((folder / "experiments/responses.json").read_bytes())
-                    usage = budgets.verify_responses(task["input"]["grant_id"], package, responses)
+                    raw = [json.loads(line) for line in (folder / "experiments/raw-responses.jsonl").read_bytes().splitlines()]
+                    usage = budgets.verify_responses(task["input"]["grant_id"], package, responses, raw_responses=raw)
             registration = register_record(folder, self.store.root / "experiments.sqlite")
             self.finish(task, result["execution_status"], result["validation_status"], dict(registration, folder=str(folder),
                         metrics=result["metrics"], usage=usage, package_hash=package["package_hash"],

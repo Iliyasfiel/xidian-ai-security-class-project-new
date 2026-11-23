@@ -267,13 +267,15 @@ def test_adapter_uses_exact_contract_without_synthetic_search_defaults(store, ex
     assert not (tmp_path / "ideas.json").exists()
 
 
-def regeneration(store):
+def regeneration(store, provider=None):
     plan = deepcopy(plan_for(store))
     plan.pop("approval")
     plan.pop("plan_id")
     plan["version"] = 2
     plan["config"].update(budget_cny=0.1, max_requests=2)
     plan["config"]["experiment"].update(mode="regenerate", response_sha256=None)
+    if provider is not None:
+        plan["config"]["experiment"].update(provider=provider, target_model=provider["model"], provider_model=provider["model"])
     store.put_plan("p", "plan", plan)
     store.review_plan("p", "plan", operator="fixture", reviewed_version=2, reviewed_hash=plan_hash(plan))
     return store.package_preview("p", "plan")["package"]
@@ -336,8 +338,13 @@ def test_regeneration_runner_uses_bound_requests_and_gateway_answers(store, expe
         return dict(data, workbench_request_id=call)
     run(tmp_path, call=fixture_call)
     responses = json.loads((tmp_path / "experiments/responses.json").read_bytes())
-    assert budgets.verify_responses(grant, package, responses)["model_requests"] == 3
+    raw = [json.loads(line) for line in (tmp_path / "experiments/raw-responses.jsonl").read_bytes().splitlines()]
+    assert budgets.verify_responses(grant, package, responses, raw_responses=raw)["model_requests"] == 3
     assert recompute(package, rows, responses)["metrics"]["valid_response_rate"] == 2 / 3
+    changed_raw = deepcopy(raw)
+    changed_raw[0]["response"]["usage"] = {"prompt_tokens": 999, "completion_tokens": 999}
+    with pytest.raises(ValueError, match="archived response differs"):
+        budgets.verify_responses(grant, package, responses, raw_responses=changed_raw)
     responses[0]["answer"] = "fabricated"
     with pytest.raises(ValueError, match="differs"):
         budgets.verify_responses(grant, package, responses)
