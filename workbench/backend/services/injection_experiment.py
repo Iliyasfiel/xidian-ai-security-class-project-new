@@ -14,7 +14,7 @@ MODES = {"frozen_analysis", "regenerate"}
 
 def source_inventory():
     root = Path(__file__).resolve().parents[3]
-    names = ["executor/main.py", "executor/protocol.py", "executor/container_tasks.py",
+    names = ["executor/main.py", "executor/protocol.py", "executor/container_tasks.py", "executor/host.py",
              "workbench/adapters/scientist02.py", "workbench/bridges/scientist02/injection_runner.py",
              "workbench/backend/services/research_package.py", "workbench/backend/services/review_workflow.py",
              "workbench/backend/services/model_gateway.py", "workbench/backend/services/experiment_budget.py",

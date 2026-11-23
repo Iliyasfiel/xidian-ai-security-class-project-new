@@ -50,6 +50,10 @@ try { npm.cmd run build } finally { Pop-Location }
 
 ## 提示注入专用实验（前四步）
 
+工作台默认使用本机 Docker CLI 执行固定评测，不依赖单独安装 Ubuntu。Docker Desktop 使用 Linux 容器。用 `WORKBENCH_DOCKER_CONTEXT` 指定本机 Docker context，未指定时 Worker 固定启动后首次使用的 context。自备镜像时把 `WORKBENCH_SCIENTIST02_IMAGE` 设为本地镜像 ID 或已安装的 registry digest，并在批准方案里使用同一个值。容器启动时不会自动拉取镜像。固定评测默认用 CPU，可通过 `WORKBENCH_DOCKER_GPUS` 显式选择 GPU。冻结回答复算只需镜像内有 Python 3.11，不执行项目02的原版科研代理。
+
+在 Windows 或 Linux 上准备本地 Python 3.11 镜像，把环境变量 `WORKBENCH_SCIENTIST02_IMAGE` 设置为 `docker image inspect python:3.11-slim --format '{{.Id}}'` 返回的 ID，再从仓库根目录用项目04的解释器运行 `python -m workbench.verify_m2_container outputs/docker-smoke`。此命令使用合成冻结回答，检查实际容器隔离和 Worker 重启对账。旧 WSL 任务按已记录的执行器继续对账，新任务按当前配置选择后端。在线模式仍需原有预算和本地网关，容器到网关须支持 `host.docker.internal`。
+
 实施、基线归档和离线回归见 [基础验收记录](../outputs/integration-m2-foundation-20261026/README.md)。后续已恢复 Docker，并通过 [真实断网容器交接验收](../outputs/integration-m2-container-20261026/README.md)：API、Worker 重启对账、固定镜像、独立重算和结果台账均使用真实实现；输入为零预算合成冻结回答，不属于第五步真实模型实验。契约说明与请求示例见 [实验契约](experiment-contract.md)。本 profile 是固定方法基准，不进入上游四阶段搜索，不做调参、多 seed 聚合或无效消融；原 synthetic 样例仍有单独兼容路径，不作为通用实验默认值。
 
 - `injection_experiment.py`：批准配置、冻结样本/回答与独立重算；三个指标必须齐全。无效回答保留在分母中；缺失回答直接核验失败。仅支持明确的 exact-answer / marker 判定，不把模型自评当正确标签。

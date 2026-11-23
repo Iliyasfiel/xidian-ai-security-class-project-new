@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 
@@ -32,13 +33,35 @@ def invoke(operation, task=None, project=None):
     if operation not in {"probe", "submit", "status", "cancel", "collect"}:
         raise ValueError("unsupported operation")
     args = ["wsl.exe", "-d", "Ubuntu-24.04", "-u", "research", "--exec", LINUX_PYTHON, LINUX_EXECUTOR, operation]
+    return _invoke(args, operation, task, project, backend="WSL")
+
+
+def docker_host_args(endpoint):
+    return ["docker", "--host", endpoint]
+
+
+def docker_host_environment():
+    return {key: value for key, value in os.environ.items() if key not in {"DOCKER_CONTEXT", "DOCKER_HOST"}}
+
+
+def invoke_docker(operation, task, project, *, runtime, endpoint, daemon_id):
+    if operation not in {"submit", "status", "cancel", "collect"}:
+        raise ValueError("unsupported container operation")
+    executor = Path(__file__).resolve().parents[1] / "executor/main.py"
+    env = dict(os.environ, WORKBENCH_EXECUTOR_RUNS=str(runtime), WORKBENCH_EXECUTOR_EXCHANGE=str(Path(__file__).resolve().parent / "exchange"),
+               WORKBENCH_DOCKER_ENDPOINT=endpoint, WORKBENCH_DOCKER_DAEMON_ID=daemon_id)
+    return _invoke([sys.executable, str(executor), operation], operation, task, project, backend="Docker", env=env)
+
+
+def _invoke(args, operation, task, project, *, backend, env=None):
     if operation != "probe":
         args.extend([identifier(task), identifier(project)])
-    completed = subprocess.run(args, capture_output=True, timeout=30)
+    options = {"env": env} if env is not None else {}
+    completed = subprocess.run(args, capture_output=True, timeout=30, **options)
     try:
         result = json.loads(completed.stdout.decode("utf-8"))
     except (ValueError, UnicodeError) as error:
-        raise RuntimeError("WSL executor returned no valid JSON; check Ubuntu availability") from error
+        raise RuntimeError(f"{backend} executor returned no valid JSON; check executor availability") from error
     if completed.returncode:
         raise ValueError(result.get("error", "executor failure"))
     return result
@@ -69,8 +92,8 @@ def create_mock_package(task, *, project="offline-demo", duration=0.2, timeout=1
             shutil.rmtree(staging)
 
 
-def collect_verified(task, project, *, data=None):
-    receipt = invoke("collect", task, project)
+def collect_verified(task, project, *, data=None, request=None):
+    receipt = (request or invoke)("collect", task, project)
     source = confined(EXCHANGE, identifier(task))
     package = json.loads((source / "research_package.json").read_text(encoding="utf-8"))
     real = package.get("schema_version") == 2

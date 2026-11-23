@@ -5,7 +5,7 @@ $source = '/mnt/e/work/ai-security-class-project/executor'
 $target = '/home/research/research-runtime/executor'
 & wsl.exe -d Ubuntu-24.04 -u research --exec /usr/bin/install -d $target
 if ($LASTEXITCODE -ne 0) { throw 'Cannot create executor directory' }
-foreach ($name in @('protocol.py', 'main.py', 'container_tasks.py')) {
+foreach ($name in @('protocol.py', 'main.py', 'container_tasks.py', 'host.py')) {
     & wsl.exe -d Ubuntu-24.04 -u research --exec /usr/bin/install -m 644 "$source/$name" "$target/$name"
     if ($LASTEXITCODE -ne 0) { throw "Cannot install $name" }
 }
