@@ -2,6 +2,7 @@
 from contextlib import ExitStack
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -31,6 +32,13 @@ def docker(*args, env=None, timeout=30):
         if identity.returncode or identity.stdout.strip() != os.environ.get("WORKBENCH_DOCKER_DAEMON_ID"):
             raise ValueError("Docker daemon changed or is unavailable; container stop cannot be confirmed")
     return subprocess.run([*command, *args], **options)
+
+
+def gateway_origin(port):
+    host = os.environ.get("WORKBENCH_DOCKER_GATEWAY_HOST", "host.docker.internal")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9.\-]{0,252}", host) or type(port) is not int or not 1 <= port <= 65535:
+        raise ValueError("invalid container-side gateway hostname or port")
+    return f"http://{host}:{port}"
 
 
 def inspect_owned(package):
@@ -266,13 +274,11 @@ def _run_container(folder, state, package, task):
             env = dict(os.environ)
             if package["config"]["experiment"]["mode"] == "regenerate":
                 gateway = state_io.read(folder / "gateway-access.json")
-                if type(gateway.get("port")) is not int or not 1 <= gateway["port"] <= 65535:
-                    raise ValueError("invalid scoped gateway port")
                 env.update(EXPERIMENT_TOKEN=gateway["token"], EXPERIMENT_GRANT=gateway["grant_id"],
-                           EXPERIMENT_GATEWAY_URL=f"http://host.docker.internal:{gateway['port']}/v1/experiment/chat/completions")
+                           EXPERIMENT_GATEWAY_URL=gateway_origin(gateway["port"]) + "/v1/experiment/chat/completions")
         else:
             gateway = state_io.read(state_io.EXCHANGE.parent / "data/model-session/gateway.json")
-            env = dict(os.environ, OPENAI_API_KEY=gateway["token"], OPENAI_BASE_URL=f"http://host.docker.internal:{gateway['port']}/v1")
+            env = dict(os.environ, OPENAI_API_KEY=gateway["token"], OPENAI_BASE_URL=gateway_origin(gateway["port"]) + "/v1")
         (folder / "experiments").mkdir(exist_ok=True)
         args = ["create", "--pull", "never", "--name", "research-" + task, "--user", "1000:1000", "--cpus", "4", "--memory", "4g", "--memory-swap", "4g", "--pids-limit", "256", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--read-only", "--tmpfs", "/tmp:rw,nosuid,nodev,size=512m", "--restart", "no", "--workdir", "/task", "--env", "OPENAI_API_KEY", "--env", "OPENAI_BASE_URL", "--env", "MPLCONFIGDIR=/tmp/matplotlib", "--env", "NUMBA_CACHE_DIR=/tmp/numba", "--env", "OMP_NUM_THREADS=1", "--env", "HF_HUB_OFFLINE=1", "--mount", f"type=bind,src={folder},dst=/task,readonly", "--mount", f"type=bind,src={folder / 'experiments'},dst=/task/experiments"]
         gpu = os.environ.get("WORKBENCH_DOCKER_GPUS", "" if injection else "all")
