@@ -81,12 +81,15 @@ wsl -d Ubuntu-24.04 -u research --exec /bin/bash "$repoInWsl/deploy/linux/verify
 
 GPU 验收执行固定种子 256×256 CUDA 矩阵乘法，并与 CPU 结果比较；只有 CUDA 可用且数值检查通过才成功。容器以 UID 1000、4 CPU、4GiB 内存、256 PID、只读文件系统、断网运行；另测项目入口导入。验收容器自动退出，不挂载 Docker socket。
 
-如需在当前仓库位置部署旧 WSL 执行器，运行 `.\deploy\linux\install-executor.ps1`。脚本通过 `wslpath` 找到源码。启动旧后端前，在启动 Worker 的同一个 PowerShell 中设置以下环境变量。对仍在途的旧任务，保持原交换目录直至确认停止。
+如需部署 WSL 执行器，在启动 Worker 的同一个 PowerShell 中设置以下变量。安装脚本通过 `wslpath` 找到源码。对仍在途的旧任务，先填回原发行版、用户和两个路径再对账，停止确认后再迁移。
 
 ```powershell
 $env:WORKBENCH_EXECUTOR_BACKEND = 'wsl'
-$env:WORKBENCH_EXECUTOR_EXCHANGE = "$repoInWsl/workbench/exchange"
-$env:WSLENV = (@($env:WSLENV, 'WORKBENCH_EXECUTOR_EXCHANGE') | Where-Object { $_ }) -join ':'
+$env:WORKBENCH_WSL_DISTRO = 'Ubuntu-24.04'
+$env:WORKBENCH_WSL_USER = 'research'
+$env:WORKBENCH_WSL_RUNTIME = '/home/research/research-runtime'
+$env:WORKBENCH_WSL_EXCHANGE = "$repoInWsl/workbench/exchange"
+.\deploy\linux\install-executor.ps1
 ```
 
 工作台的任务、实验执行与报告使用方式见[工作台说明](../../workbench/README.md)。环境与入口检查不等同于完整科研流程通过，实际完成范围和已知问题见[课程作业报告](../../submissions/26241215467/README.md)。

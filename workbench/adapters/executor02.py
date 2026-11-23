@@ -23,6 +23,7 @@ class Executor02:
         self.context = os.environ.get("WORKBENCH_DOCKER_CONTEXT")
         self.endpoint = None
         self.daemon_id = None
+        self._wsl_settings = None
 
     def _docker_context(self):
         if not self.context:
@@ -53,18 +54,27 @@ class Executor02:
     @property
     def identity(self):
         if self.backend == "wsl":
-            return self.LEGACY_IDENTITY
+            settings = self.wsl_settings()
+            if settings == ("Ubuntu-24.04", "research", "/home/research/research-runtime",
+                            "/mnt/e/work/ai-security-class-project/workbench/exchange"):
+                return self.LEGACY_IDENTITY
+            return "wsl:" + digest(canonical(settings)) + ":scientist02"
         endpoint, daemon_id = self._docker_target()
         return "docker:" + digest(canonical([endpoint, daemon_id])) + ":scientist02"
 
     def for_identity(self, identity):
-        if identity == self.LEGACY_IDENTITY and self.backend != "wsl":
+        if isinstance(identity, str) and identity.startswith("wsl:") and self.backend != "wsl":
             return Executor02(self.store, backend="wsl")
         return self
 
+    def wsl_settings(self):
+        if self._wsl_settings is None:
+            self._wsl_settings = offline_client.wsl_settings()
+        return self._wsl_settings
+
     def _invoke(self, operation, task, project):
         if self.backend == "wsl":
-            return offline_client.invoke(operation, task, project)
+            return offline_client.invoke(operation, task, project, settings=self.wsl_settings())
         endpoint, daemon_id = self._docker_target()
         return offline_client.invoke_docker(operation, task, project, runtime=self.store.root / "docker-executor", endpoint=endpoint, daemon_id=daemon_id)
 

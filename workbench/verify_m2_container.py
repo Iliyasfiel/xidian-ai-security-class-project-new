@@ -19,7 +19,7 @@ import uvicorn
 from executor.protocol import canonical, digest
 from workbench.backend.api.app import create_app
 from workbench.backend.store import Store, TERMINAL
-from workbench.offline_client import docker_host_args, docker_host_environment
+from workbench.offline_client import docker_host_args, docker_host_environment, wsl_prefix
 from workbench.verify_experiment import verify as independent_verify
 from workbench.worker import Worker
 
@@ -90,7 +90,7 @@ def verify(output):
             save("independent-recalculation.json", verified)
             assert verified["verified"]["metrics"] == dict(attack_success_rate=0.5, clean_task_accuracy=1, valid_response_rate=2 / 3)
             if worker.executor.backend == "wsl":
-                prefix = ["wsl.exe", "-d", "Ubuntu-24.04", "-u", "research", "--exec", "docker"]
+                prefix = [*wsl_prefix(worker.executor.wsl_settings()), "docker"]
                 env = None
             else:
                 prefix = docker_host_args(worker.executor.endpoint)

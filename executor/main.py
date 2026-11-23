@@ -16,7 +16,7 @@ from host import file_lock, process_identity
 
 ROOT = Path(__file__).resolve().parent.parent
 RUNS = Path(os.environ.get("WORKBENCH_EXECUTOR_RUNS", ROOT / "runs"))
-EXCHANGE = Path(os.environ.get("WORKBENCH_EXECUTOR_EXCHANGE", "/mnt/e/work/ai-security-class-project/workbench/exchange"))
+EXCHANGE = Path(os.environ.get("WORKBENCH_EXECUTOR_EXCHANGE", ROOT / "workbench/exchange"))
 TERMINAL = {"completed", "failed", "cancelled", "timed_out", "interrupted"}
 
 

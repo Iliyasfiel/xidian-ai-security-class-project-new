@@ -2,6 +2,7 @@
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -13,8 +14,23 @@ from executor.protocol import canonical, confined, digest, file_hash, identifier
 REPO = local_path(Path(__file__).resolve().parent.parent)
 EXCHANGE = REPO / "workbench/exchange"
 DATA = REPO / "workbench/data/experiments"
-LINUX_PYTHON = "/home/research/research-runtime/engines/02/.venv/bin/python"
-LINUX_EXECUTOR = "/home/research/research-runtime/executor/main.py"
+
+
+def wsl_settings():
+    distribution = os.environ.get("WORKBENCH_WSL_DISTRO", "")
+    user = os.environ.get("WORKBENCH_WSL_USER", "")
+    runtime = os.environ.get("WORKBENCH_WSL_RUNTIME", "").rstrip("/")
+    exchange = os.environ.get("WORKBENCH_WSL_EXCHANGE", "").rstrip("/")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_. -]*", distribution) or not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]*", user):
+        raise ValueError("set WORKBENCH_WSL_DISTRO and WORKBENCH_WSL_USER for the WSL backend")
+    if any(not path.startswith("/") or any(part in {".", ".."} for part in path.split("/")) or "\0" in path for path in (runtime, exchange)):
+        raise ValueError("set absolute Linux paths WORKBENCH_WSL_RUNTIME and WORKBENCH_WSL_EXCHANGE")
+    return distribution, user, runtime, exchange
+
+
+def wsl_prefix(settings):
+    distribution, user, _, _ = settings
+    return ["wsl.exe", "-d", distribution, "-u", user, "--exec"]
 
 
 def publish_directory(staging, target):
@@ -29,10 +45,16 @@ def publish_directory(staging, target):
             time.sleep(0.05)
 
 
-def invoke(operation, task=None, project=None):
+def invoke(operation, task=None, project=None, *, settings=None):
     if operation not in {"probe", "submit", "status", "cancel", "collect"}:
         raise ValueError("unsupported operation")
-    args = ["wsl.exe", "-d", "Ubuntu-24.04", "-u", "research", "--exec", LINUX_PYTHON, LINUX_EXECUTOR, operation]
+    if operation != "probe":
+        identifier(task)
+        identifier(project)
+    settings = settings or wsl_settings()
+    _, _, runtime, exchange = settings
+    args = [*wsl_prefix(settings), "env", f"WORKBENCH_EXECUTOR_EXCHANGE={exchange}",
+            f"{runtime}/engines/02/.venv/bin/python", f"{runtime}/executor/main.py", operation]
     return _invoke(args, operation, task, project, backend="WSL")
 
 
