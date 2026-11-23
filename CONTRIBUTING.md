@@ -53,6 +53,10 @@ npm ci
 npm run build
 ```
 
+Vite 开发代理默认连接项目04的 `http://localhost:8080`。自定义后端端口时，在启动 `npm run dev` 的终端设置 `DEV_API_ORIGIN`，或在 `webui/.env.local` 里写入如 `DEV_API_ORIGIN=http://127.0.0.1:8081`。API 和工作台跳转使用同一个后端地址。
+
+项目04的 Python 锁来自清华 PyPI 镜像，前端锁包含 npmmirror 归档地址。日常安装用 `uv sync --frozen` 与 `npm ci`。团队换源时，在独立 PR 中修改 Python 索引并重建 `uv.lock`，用新 registry 重新生成前端锁，检查版本与完整性摘要的差异，再跑两平台安装和构建。已有锁的下载地址不会随运行时模型配置变化。
+
 ### 工作台：Windows 与 Linux / macOS
 
 Windows 使用 PowerShell 7，从仓库根目录执行：
