@@ -13,7 +13,7 @@
 | [01 · AI-Researcher](../../projects/project-01-ai-researcher/README.md) | Linux 容器基础设施、一次 TCP 执行验证和容器归属检查的离线对照。 | 完整自主研究流程待验收。 |
 | [02 · AI-Scientist-v2](../../projects/project-02-ai-scientist-v2/README.md) | GPU、实验执行器、论文工具链以及单 seed 训练指标。工作台固定评测已有断网容器验收。 | 原版实验止于消融阶段。完整实验与论文交付待验收。 |
 | [03 · DeepTutor](../../projects/project-03-deeptutor/README.md) | 本地嵌入完成 5 份资料的索引，核对了引用与证据不足的返回。 | 更大样本的问答质量和跨语言检索待验证。 |
-| [04 · Intelligence Gathering](../../projects/project-04-Intelligence%20Gathering/README.md) | 历史前端构建和 API 回归已通过。工作台复用其前端及 Python 环境。 | 补一份公开资料从采集、清洗、分析到归档的证据对照。 |
+| [04 · Intelligence Gathering](../../projects/project-04-Intelligence%20Gathering/README.md) | 历史前端构建和 API 回归已通过。已离线复现公开论文从采集适配器到知识库归档的证据链。 | 实际 arXiv 请求与前端操作验收待确认。 |
 | [联动工作台](../../workbench/README.md) | 本地索引、容器固定评测、独立核验和报告导出已通过。 | 报告待人工审核。当前提交的远端 CI 和浏览器验收待确认。 |
 
 课程源码整理时记录的上游提交为 01 `f9a6f8480860c193afff600eeffe3defcee8a978`、02 `96bd51617cfdbb494a9fc283af00fe090edfae48`、03 `f07029cfcf2c8dfccdb671cdfc343db8334f5741`。04 使用基于 MediaCrawler 的本地教学版，项目说明记录了来源和许可证。
@@ -56,6 +56,17 @@ python -m unittest discover -s projects/project-01-ai-researcher/tests -v
 - 增加提示注入实验契约：冻结回答分析与显式授权后的回答生成分别处理，预算授权绑定具体方案和输入。
 - 增加独立指标重算、证据哈希与防篡改核验、HTML/Markdown 报告以及人工待审状态。
 - 增加工作台前端及与 DeepTutor 的本机联动、同步失败恢复和连接边界测试。
+
+2026-11-24 用两条公开论文元数据构造 arXiv 响应。实际采集适配器发出 `all:Transformer` 查询，设置 `start=0`、`max_results=2`，按相关度降序。测试替身提供响应，适配器实际写入 JSONL。向输入追加一条重复记录后，用 `Transformer` 自定义主题做本地规则分析，3 条输入去重为 2 条分析记录，导出 2 条学术知识库笔记。逐层核对了第一条记录的标题、来源 URL、采集文件和 SQLite 文档 ID。 [Attention Is All You Need](https://arxiv.org/abs/1706.03762v7) · [BERT](https://arxiv.org/abs/1810.04805v2)
+
+从仓库根目录使用项目04的解释器运行：
+
+```powershell
+$python = '.\projects\project-04-Intelligence Gathering\.venv\Scripts\python.exe'
+& $python -m pytest -q 'projects/project-04-Intelligence Gathering/tests/test_arxiv_archiving.py'
+```
+
+本机 Python 3.11.16 下 1 项通过。验证范围包括请求参数、响应解析、JSONL 写入、规则清洗、SQLite 记录及 Markdown 归档；HTTP 响应使用测试替身，模型调用为 0。
 
 ## 复现与验证
 
