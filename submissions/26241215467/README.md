@@ -14,7 +14,7 @@
 | [02 · AI-Scientist-v2](../../projects/project-02-ai-scientist-v2/README.md) | GPU、实验执行器、论文工具链以及单 seed 训练指标。内置样例的固定数据配置及阶段目标通过离线测试。 | 历史原版实验止于消融阶段。新配置的实际训练、采样对账及论文交付待验收。 |
 | [03 · DeepTutor](../../projects/project-03-deeptutor/README.md) | 本地嵌入完成 5 份资料的索引，核对了引用与证据不足的返回。 | 更大样本的问答质量和跨语言检索待验证。 |
 | [04 · Intelligence Gathering](../../projects/project-04-Intelligence%20Gathering/README.md) | 已实测 GitHub 公开资料采集、规则分析和学术知识库归档，另有 arXiv 离线复现。 | arXiv 实采遇到限流。04 自身的采集页面交互待验收。 |
-| [联动工作台](../../workbench/README.md) | 已有本地索引记录。本轮复跑了容器固定评测、独立核验和浏览器报告。 | 报告待人工审核。最新 GitHub Actions 和在线回答生成待验收。 |
+| [联动工作台](../../workbench/README.md) | 已在同一项目内跑通本地索引、带出处检索、断网容器固定评测、独立核验和浏览器报告。 | 报告待人工审核。最新 GitHub Actions 和在线回答生成待验收。 |
 
 课程源码整理时记录的上游提交为 01 `f9a6f8480860c193afff600eeffe3defcee8a978`、02 `96bd51617cfdbb494a9fc283af00fe090edfae48`、03 `f07029cfcf2c8dfccdb671cdfc343db8334f5741`。04 使用基于 MediaCrawler 的本地教学版，项目说明记录了来源和许可证。
 
@@ -126,6 +126,10 @@ $python = '.\projects\project-04-Intelligence Gathering\.venv\Scripts\python.exe
 | 项目02原版 | 断网容器可见 RTX 5070 Ti（16,303 MiB）。本机缺项目02原版镜像及锁定 wheel 缓存，实际训练和论文未运行。 |
 
 GitHub Actions 待首次远端运行。各次验收的产物路径和哈希见 [verification.json](verification.json)。实采来源见 [pytorch/pytorch](https://github.com/pytorch/pytorch)。
+
+随后以 `6c5343109e416be4ea59047a7b359569b4bf00da` 复跑同一工作台项目的完整本机链路。隔离实例使用本机 Ollama 的 `qwen3-embedding:0.6b` 索引并核对了 5 份合成资料。范围内问题返回带原文支持的 `grounded`，范围外问题返回 `insufficient`。同一批准快照交给断网 Docker 处理冻结回答，独立重算通过。浏览器从同一任务导出报告，图表和 13 条证据链接通过检查，报告复核通过并处于 `pending_review`。付费模型请求为 0。
+
+小组仓库推送返回 HTTP 403。该提交尚无 GitHub Actions 运行记录。
 
 ### 2026-10-27 提交前验证
 

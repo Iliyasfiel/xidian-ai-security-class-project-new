@@ -166,6 +166,26 @@
     },
     "remote_ci": "pending"
   },
+  "linked_native_acceptance_2026_11_24": {
+    "source_commit": "6c5343109e416be4ea59047a7b359569b4bf00da",
+    "status": "passed",
+    "scope": "One isolated project used the same approved synthetic snapshot for native indexing, evidence-checked retrieval, and frozen Docker evaluation.",
+    "embedding_model": "qwen3-embedding:0.6b",
+    "embedding_dimension": 1024,
+    "indexed_documents": 5,
+    "in_scope": "grounded",
+    "out_of_scope": "insufficient",
+    "evaluation_validation": "passed",
+    "browser_report": "passed",
+    "evidence_links": 13,
+    "report_id": "e9cbd8632619cf5a983efd42f6da192379caf54953729e0c024c257f15c73ad7",
+    "report_independent_verification": "passed",
+    "review_status": "pending_review",
+    "paid_model_requests": 0,
+    "artifact": "outputs/e2e-linked-20261124-221149/acceptance.json",
+    "artifact_sha256": "e84462a65ccd4e56cc028b5dccd9c0846d710111360e802c3bf7ea8c36269928",
+    "remote_ci": "not_triggered_group_push_http_403"
+  },
   "historical_evidence": {
     "project01_infrastructure": {
       "model_requests": 0,
