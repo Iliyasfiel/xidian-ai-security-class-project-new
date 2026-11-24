@@ -57,6 +57,8 @@ import yaml
 root = Path(sys.argv[1])
 cfg = yaml.safe_load(sys.stdin.read())
 alias = 'gpt-4o-2024-11-20'
+if sys.argv[2] == 'fixed-local':
+    cfg['experiment']['fixed_local_data'] = True
 cfg['agent']['num_workers'] = 1
 cfg['agent']['steps'] = 1
 cfg['agent']['stages'] = {f'stage{i}_max_iters': n for i, n in enumerate((2, 2, 1, 1), 1)}
@@ -75,14 +77,24 @@ idea = {
     'Short Hypothesis': 'Mild L2 regularization may improve held-out accuracy of a tiny MLP on noisy synthetic data.',
     'Related Work': 'An environment and workflow demonstration; no novelty or literature claims.',
     'Abstract': 'Compare weight decay 0, 0.001 and 0.01 on a fixed, locally generated binary classification dataset using the same small MLP and data splits.',
-    'Experiments': 'Use only installed numpy, torch and matplotlib. Generate 512 samples with 8 features and noisy linear labels at seed 42. Fix train/validation/test splits at 60/20/20 percent. Use one hidden layer of width 16, batch size 32, at most 10 epochs and one seed. Compare all weight decay values with identical architecture and initialization. Save test accuracy, validation loss, settings, and plots. All stages must reuse these synthetic data; do not download HuggingFace datasets, pretrained models, or other network resources. Do not pip install packages. Keep experiments within 6GB VRAM.',
+    'Experiments': (
+        'Use only installed numpy, torch and matplotlib. Generate 512 samples with 8 features and noisy linear labels at seed 42. '
+        'Fix train/validation/test splits at 60/20/20 percent. Use one hidden layer of width 16, batch size 32, at most 10 epochs and one seed. '
+        'Compare all weight decay values with identical architecture, initialization, and shared training controls. '
+        'Before training any group, generate an epoch-by-epoch sequence of training indices with a dedicated random generator seeded at 42. '
+        'Reuse exactly that sequence in every group without independent shuffling. Save the split indices and per-epoch training indices '
+        'alongside test accuracy, validation loss, settings, and plots so that sample order can be checked. '
+        'All stages must reuse these synthetic data; do not download HuggingFace datasets, pretrained models, or other network resources. '
+        'Do not pip install packages. Keep experiments within 6GB VRAM.'
+    ),
     'Risk Factors and Limitations': 'A small synthetic smoke experiment, not evidence of scientific novelty or real-world effectiveness. Stop and report missing results rather than invent them.'
 }
 (root / 'ideas.json').write_text(json.dumps([idea], indent=2), encoding='utf-8')
 '@
+$prepareMode = if ($IdeasFile) { 'custom' } else { 'fixed-local' }
 $config | docker run --rm -i --pull never --network none --read-only --tmpfs /tmp:rw,size=64m `
     --cap-drop ALL --security-opt no-new-privileges --memory 256m --cpus 1 `
-    --mount "type=bind,source=$folder,target=/prepare" --entrypoint python $imageId -c $prepareCode /prepare
+    --mount "type=bind,source=$folder,target=/prepare" --entrypoint python $imageId -c $prepareCode /prepare $prepareMode
 if ($LASTEXITCODE -ne 0) { throw 'Could not prepare the isolated configuration; inspect the Docker output above.' }
 if ($IdeasFile) { Copy-Item -LiteralPath $ideasPath -Destination (Join-Path $folder 'ideas.json') }
 Write-Output "Prepared: $folder"
