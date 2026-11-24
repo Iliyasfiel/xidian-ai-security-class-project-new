@@ -10,7 +10,7 @@
 
 | 模块 | 已有验证证据 | 待补验证 |
 | --- | --- | --- |
-| [01 · AI-Researcher](../../projects/project-01-ai-researcher/README.md) | Linux 容器基础设施与一次 TCP 执行最小验证 | 研究模块的输入、输出及修改前后对比。完整自主研究流程待验收。 |
+| [01 · AI-Researcher](../../projects/project-01-ai-researcher/README.md) | Linux 容器基础设施、一次 TCP 执行验证和容器归属检查的离线对照。 | 完整自主研究流程待验收。 |
 | [02 · AI-Scientist-v2](../../projects/project-02-ai-scientist-v2/README.md) | GPU、实验执行器、论文工具链以及单 seed 训练指标。工作台固定评测已有断网容器验收。 | 原版实验止于消融阶段。完整实验与论文交付待验收。 |
 | [03 · DeepTutor](../../projects/project-03-deeptutor/README.md) | 本地嵌入完成 5 份资料的索引，核对了引用与证据不足的返回。 | 更大样本的问答质量和跨语言检索待验证。 |
 | [04 · Intelligence Gathering](../../projects/project-04-Intelligence%20Gathering/README.md) | 历史前端构建和 API 回归已通过。工作台复用其前端及 Python 环境。 | 补一份公开资料从采集、清洗、分析到归档的证据对照。 |
@@ -25,6 +25,14 @@
 - 增加 WSL/Linux 部署、CPU 依赖锁定与源码快照脚本。
 - 在 Docker 环境适配中增加任务标识、容器归属检查和局部清理边界。
 - 完成容器基础设施与 TCP 执行最小验证；这不代表完整自主研究流程已验收。
+
+2026-11-24 复现了研究流程使用的 `DockerEnv.stop_container()`。测试固定容器名 `course-demo`，用替身提供 Docker 状态和标签。旧式非托管路径按容器名直接请求停止；托管路径对不同任务的同名容器只查询归属，拒绝停止；对本任务的容器检查归属、请求停止并复查状态。从仓库根目录运行：
+
+```powershell
+python -m unittest discover -s projects/project-01-ai-researcher/tests -v
+```
+
+本机 Python 3.12.7 下 3 项通过。此处验证 Python 适配器发出的 Docker 命令和错误行为。实际容器与 TCP 的历史证据另见 [verification.json](verification.json)。
 
 ### 项目02：AI-Scientist-v2
 
