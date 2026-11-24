@@ -46,7 +46,7 @@ try { npm.cmd run build } finally { Pop-Location }
 
 日常开发可在根目录用项目04的 Python 运行 `python -m workbench.verify_offline outputs/offline-smoke`。输出目录必须是新目录。命令使用仓库自带的合成资料和冻结回答，检查任务恢复、独立重算与报告导出，生成 `report/index.html`。检索和执行服务使用测试替身，无需 Docker、GPU、模型凭据或历史文件。
 
-真实本机链路、用户审核授权、离线故障/并发测试、UI 截图与限制见 [M1 验收记录](../outputs/integration-m1-20261024/README.md)。M0 原始锁清单和验收记录保留不变。
+本机索引、固定评测、报告复核和已知限制见[课程验收摘要](../submissions/26241215467/README.md#2026-11-24-验收摘要)。历史索引和实验结果见[结构化验证记录](../submissions/26241215467/verification.json)。
 
 ## 提示注入专用实验（前四步）
 
@@ -56,7 +56,7 @@ try { npm.cmd run build } finally { Pop-Location }
 
 项目02的独立 DeepSeek 启动脚本通过 `-Image` 选择本地 Scientist02 镜像，也可读取 `WORKBENCH_SCIENTIST02_IMAGE`。脚本先解析出不可变 ID，准备和运行阶段均使用该 ID。独立入口可以用 `-GatewayHost` 覆盖容器侧网关名称。
 
-实施、基线归档和离线回归见 [基础验收记录](../outputs/integration-m2-foundation-20261026/README.md)。后续已恢复 Docker，并通过 [真实断网容器交接验收](../outputs/integration-m2-container-20261026/README.md)：API、Worker 重启对账、固定镜像、独立重算和结果台账均使用真实实现；输入为零预算合成冻结回答，不属于第五步真实模型实验。契约说明与请求示例见 [实验契约](experiment-contract.md)。本 profile 是固定方法基准，不进入上游四阶段搜索，不做调参、多 seed 聚合或无效消融；原 synthetic 样例仍有单独兼容路径，不作为通用实验默认值。
+11 月 24 日的断网容器验收覆盖本机 API、Worker 重启对账、固定镜像、独立重算和结果台账，使用零预算的合成冻结回答。结果见[课程验收摘要](../submissions/26241215467/README.md#2026-11-24-验收摘要)。契约说明与请求示例见[实验契约](experiment-contract.md)。本 profile 执行固定方法评测。上游四阶段搜索由项目02原版入口运行，旧 synthetic 样例保留独立兼容路径。
 
 - `injection_experiment.py`：批准配置、冻结样本/回答与独立重算；三个指标必须齐全。无效回答保留在分母中；缺失回答直接核验失败。仅支持明确的 exact-answer / marker 判定，不把模型自评当正确标签。
 - `executor02.py` → `worker.py` → 原 WSL 协议 → `container_tasks.py`：多份批准资料、独立 attempt、只读源码副本、确切模型和配置。冻结分析容器断网；重新生成只给受限预算 token，容器没有供应商密钥。旧样例的 `dataset.npz`、64 条预测、seed 42、1800 秒和四阶段次数不会进入新 profile。

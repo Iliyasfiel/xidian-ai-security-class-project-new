@@ -29,6 +29,85 @@
     ]
   },
   "verification_date": "2026-10-27",
+  "review_2026_11_24": {
+    "reviewed_source_commit": "2eab1e44494611dde405f2cc64e5f628c6d6829a",
+    "review_environment": {
+      "os": "Windows 11 build 26200",
+      "powershell": "7.6.9",
+      "project04_python": "3.11.16"
+    },
+    "rerun": {
+      "offline_smoke": {
+        "command": "python -m workbench.verify_offline <new-output-directory>",
+        "passed": 2,
+        "synthetic_report_verification": "passed"
+      },
+      "existing_local_report": {
+        "command": "python -m workbench.export_experiment_report <report-directory> --verify",
+        "report_id": "520fb091060aa5dd1333a66a9b295374483a64e011881b278955caede4540993",
+        "validation_status": "passed",
+        "review_status": "pending_review"
+      }
+    },
+    "same_day_regression": {
+      "passed": 96,
+      "subtests_passed": 17,
+      "skipped": 1,
+      "skipped_reason": "Historical journals were not available.",
+      "deselected": 8,
+      "deselected_reason": "Local socket access was restricted in the Windows sandbox.",
+      "pytest_selection": {
+        "markers": "not anyio and not asyncio",
+        "keywords": "not scoped_gateway_http_boundary",
+        "paths": [
+          "workbench/tests/test_workbench_m1.py",
+          "workbench/tests/test_scientist02_journal.py",
+          "workbench/tests/test_offline_protocol.py",
+          "workbench/tests/test_experiment_gateway.py",
+          "workbench/tests/test_injection_report.py",
+          "workbench/tests/test_injection_experiment.py"
+        ]
+      }
+    },
+    "local_acceptance_artifacts": {
+      "scope_note": "These summaries were read from existing artifacts. Their source commits were not recorded. Paths identify Git-ignored local files; SHA-256 values identify the original acceptance JSON files.",
+      "native_index_to_report": {
+        "artifact": "outputs/qwen-workflow-live-20261124/acceptance.json",
+        "artifact_sha256": "30c1fd6e927fdbe50aac7c467af2fc26a5092e360d09670761180fd1913ff83f",
+        "embedding_model": "qwen3-embedding:0.6b",
+        "embedding_dimension": 1024,
+        "embedding_mode": "local",
+        "indexed_documents": 5,
+        "matched_citations": 1,
+        "out_of_scope_query_status": "insufficient",
+        "index_validation_status": "passed",
+        "experiment_validation_status": "passed",
+        "experiment_mode": "frozen_analysis",
+        "paid_model_requests": 0,
+        "review_status": "pending_review"
+      },
+      "docker_frozen_answers": {
+        "artifacts": [
+          {
+            "artifact": "outputs/docker-config-smoke-20261124/acceptance.json",
+            "artifact_sha256": "e39917cd393b4f19a32c15c3e378c472dd6e61dc88ff87239e8dc27400f9f0a2"
+          },
+          {
+            "artifact": "outputs/docker-provider-config-20261124/acceptance.json",
+            "artifact_sha256": "3a8802dc8e2fefb88917b6a3c9cb6e4e9d27cbb533bee419118e6d82d6fa51e0"
+          }
+        ],
+        "status": "passed",
+        "network": "none",
+        "worker_restart_reconciled": true,
+        "duplicate_same_task": true,
+        "unique_registered_results_per_run": 1,
+        "budget_cny": 0,
+        "paid_model_requests": 0,
+        "review_status": "pending_review"
+      }
+    }
+  },
   "historical_evidence": {
     "project01_infrastructure": {
       "model_requests": 0,

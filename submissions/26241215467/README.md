@@ -6,6 +6,18 @@
 - 项目编号：项目01、02、03、04
 - 目标：搭建四项目独立运行环境，验证可执行的最小实例，实现资料审核、知识检索、实验执行和报告交付的联动工作台，并明确运行成功与科研结论有效之间的边界。
 
+## 交付总览（2026-11-24）
+
+| 模块 | 已有验证证据 | 待补验证 |
+| --- | --- | --- |
+| [01 · AI-Researcher](../../projects/project-01-ai-researcher/README.md) | Linux 容器基础设施与一次 TCP 执行最小验证 | 研究模块的输入、输出及修改前后对比。完整自主研究流程待验收。 |
+| [02 · AI-Scientist-v2](../../projects/project-02-ai-scientist-v2/README.md) | GPU、实验执行器、论文工具链以及单 seed 训练指标。工作台固定评测已有断网容器验收。 | 原版实验止于消融阶段。完整实验与论文交付待验收。 |
+| [03 · DeepTutor](../../projects/project-03-deeptutor/README.md) | 本地嵌入完成 5 份资料的索引，核对了引用与证据不足的返回。 | 更大样本的问答质量和跨语言检索待验证。 |
+| [04 · Intelligence Gathering](../../projects/project-04-Intelligence%20Gathering/README.md) | 历史前端构建和 API 回归已通过。工作台复用其前端及 Python 环境。 | 补一份公开资料从采集、清洗、分析到归档的证据对照。 |
+| [联动工作台](../../workbench/README.md) | 本地索引、容器固定评测、独立核验和报告导出已通过。 | 报告待人工审核。当前提交的远端 CI 和浏览器验收待确认。 |
+
+课程源码整理时记录的上游提交为 01 `f9a6f8480860c193afff600eeffe3defcee8a978`、02 `96bd51617cfdbb494a9fc283af00fe090edfae48`、03 `f07029cfcf2c8dfccdb671cdfc343db8334f5741`。04 使用基于 MediaCrawler 的本地教学版，项目说明记录了来源和许可证。
+
 ## 修改内容
 
 ### 项目01：AI-Researcher
@@ -39,7 +51,7 @@
 
 ## 复现与验证
 
-环境为 Windows 11、PowerShell 7、WSL2 / Ubuntu 24.04、Docker Desktop。项目02使用 Python 3.11.16、PyTorch 2.6.0+cu124；GPU 为 RTX 3060 Laptop 6GB。四项目保留独立依赖，不要求安装进同一个虚拟环境。
+10 月课程验证使用 Windows 11、PowerShell 7、WSL2 / Ubuntu 24.04 和 Docker Desktop。项目02使用 Python 3.11.16、PyTorch 2.6.0+cu124 和 RTX 3060 Laptop 6GB。四项目各自使用独立依赖。
 
 ### 启动入口
 
@@ -57,15 +69,37 @@
 # .\workbench\start-scientist02-deepseek.ps1 -KeyFile 'C:\your-local-path\deepseek-key.txt' -Run
 ```
 
-项目01和02的 Linux 环境准备见 [部署入口](../../deploy/linux/README.md)。这些脚本包含本机路径或镜像标识，其他机器使用前需核对，不构成跨机器零配置安装保证。
+项目01和02的 Linux 环境准备见 [部署入口](../../deploy/linux/README.md)。在其他机器执行前，按[协作与环境配置](../../CONTRIBUTING.md)核对解释器、镜像和服务地址。
 
-### 本次提交前验证（2026-10-27）
+### 2026-11-24 验收摘要
+
+本次复核的代码为 `2eab1e44494611dde405f2cc64e5f628c6d6829a`，环境为 Windows 11（构建 26200）、PowerShell 7.6.9、项目04的 Python 3.11.16。此前生成的本机验收摘要未记录各次运行的 Git 提交。原始验收文件的 SHA-256 和结构化结果见 [verification.json](verification.json)。
+
+| 检查 | 复核结果 |
+| --- | --- |
+| 本次离线冒烟 | 2 项通过，生成的合成报告通过独立核验。使用测试替身，无需 Docker、GPU 或模型凭据。 |
+| 本次已有报告复核 | 读取 11 月 24 日联动验收产物，再次核验报告通过，人工审核状态为 `pending_review`。 |
+| 同日选定回归 | 96 项与 17 个子测试通过。1 项缺少历史日志跳过，8 项受 Windows 沙箱的本地套接字限制被排除。 |
+| 同日本机联动验收 | 本地 Ollama 的 `qwen3-embedding:0.6b`（1024 维）完成 5 份资料的索引。样例问题核对到 1 条引用，范围外问题返回 `insufficient`。固定评测用冻结回答完成独立核验并导出报告，付费模型请求为 0。 |
+| 同日 Docker 验收 | 两份验收记录均通过。实际容器使用固定镜像和断网网络模式，Worker 重启后成功对账，重复提交返回同一任务，各登记 1 份结果。预算及付费模型请求均为 0，人工审核状态为 `pending_review`。 |
+
+从仓库根目录执行以下命令。冒烟输出需要一个新目录。已有报告目录可从本机联动验收摘要的 `report` 字段定位，验证时传入包含 `index.html` 的目录。
+
+```powershell
+$python = '.\projects\project-04-Intelligence Gathering\.venv\Scripts\python.exe'
+& $python -m workbench.verify_offline outputs/course-offline
+& $python -m workbench.export_experiment_report '<已有报告目录>' --verify
+```
+
+真实 Docker 验收的环境准备和命令见 [工作台说明](../../workbench/README.md#提示注入专用实验前四步)。本次文档复核未重跑 Docker、DeepTutor 实际索引、前端构建或在线实验。
+
+### 2026-10-27 提交前验证
 
 - 工作台及04相关回归：247 passed、17 subtests passed，无跳过。
 - 项目03本地嵌入与诊断测试：36 passed。
 - 项目04前端：`npm run build` 通过，含 TypeScript 检查与 Vite 构建；存在非阻塞的包体积提示。
 - DeepSeek 新入口：PowerShell 解析、默认准备、自定义题目、生成配置类型与 Docker 到网关的只读模型列表请求通过；测试没有调用真实模型生成。
-- 本次未重跑真实收费实验、真实知识库索引或浏览器验收。2026-10-24/26 的历史集成记录与本次回归分别记载，摘要见 [verification.json](verification.json)。
+- 10 月 27 日未重跑收费实验、实际知识库索引或浏览器验收。10 月 24 日和 26 日的集成结果另见 [verification.json](verification.json)。
 
 后端回归示例（仓库根目录）：
 
